@@ -1,8 +1,7 @@
 import random
 from math import exp, floor
+from .constant import *
 
-COP = 5
-CIVI = 0
 
 
 class Turtle:
@@ -15,7 +14,7 @@ class Turtle:
         self.jailterm = 0
         self.role = role
 
-    def moveRandom(self):
+    def moveRandom(self, movement):
         """
         randomly pick an available move
         :return:
