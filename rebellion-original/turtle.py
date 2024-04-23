@@ -3,9 +3,6 @@ import dynamicParams, initialParams
 from math import exp, floor
 from .constant import *
 
-COP = 5
-CIVI = 0
-
 
 class Turtle:
     def __init__(self, x, y):

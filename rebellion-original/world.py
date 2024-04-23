@@ -9,13 +9,13 @@ class World:
         self.width: int = width
         self.height: int = height
         self.patches: list[list[Patch]] = []
-        self.cops: list[Turtle] = []
-        self.civies: list[Turtle] = []
+        self.cops: list[Cop] = []
+        self.civies: list[Agent] = []
         self.tick: int = 0
         self.movement: bool = True
         self.vision = vision
-        self.initialize_patches()
-        self.initialise_turtles(cop_density, civi_density, vision)
+        self.initialize_patches(vision)
+        self.initialise_turtles(cop_density, civi_density)
 
     def verify_parameters(self, width, height, cop_density, civi_density, vision):
         """
@@ -28,7 +28,7 @@ class World:
         if vision > MAX_VISION or vision < 0:
             raise Exception("Invalid parameters: Vision exceeds the world")
 
-    def initialize_patches(self, cop_density, civi_density, vision):
+    def initialize_patches(self, vision):
         """
         create patch as container & store its neighbour reference, top left as (0, 0)
         """
@@ -39,15 +39,15 @@ class World:
             self.patches.append(row)
         # TODO: initialize each patch with its neighbouring patch reference
 
-    def initialise_turtles(self):
+    def initialise_turtles(self, cop_density, civi_density):
         patch_cnt = self.height * self.width
-        cop_cnt = round(self.cop_density * 0.01 * patch_cnt)
-        civi_cnt = round(self.civi_density * 0.01 * patch_cnt)
+        cop_cnt = round(cop_density * 0.01 * patch_cnt)
+        civi_cnt = round(civi_density * 0.01 * patch_cnt)
         loc_map = [(x, y) for x in range(self.width) for y in range(self.height)]
         random.shuffle(loc_map)
         for i in range(cop_cnt):
             x, y = loc_map.pop()
-            self.patches[x][y].add_member(Cop(x,y))
+            self.patches[x][y].add_member(Cop(x, y))
         for i in range(civi_cnt):
             x, y = loc_map.pop()
             self.patches[x][y].add_member(Agent(x, y))
@@ -64,10 +64,14 @@ class World:
             neighbour_turtles = self.patches[civ.x][civ.y].get_neighbour_turtles()
             cop_cnt, active_cnt = 0, 0
             for i in neighbour_turtles:
-                if i.role == COP:
+                if type(i) is Cop:
                     cop_cnt += 1
                 elif i.active:
                     active_cnt += 1
+                # if i.role == COP:
+                #     cop_cnt += 1
+                # elif i.active:
+                #     active_cnt += 1
             civ.checkRevolt(cop_cnt, active_cnt)
         # make cops hunt
         for cop in self.cops:
@@ -78,11 +82,10 @@ class World:
 
         # reduce all jail terms
         for c in self.civies:
-            if c.jailterm > 0:
-                c.jailterm -= 1
+            if c.jail_term > 0:
+                c.jail_term -= 1
         # renew tick
         self.tick += 1
-        pass
 
 
 class Patch:
@@ -105,5 +108,5 @@ class Patch:
         """
         ans = []
         for p in self.neighbourPatches:
-            ans.append(p.members)
+            ans.extend(p.members)
         return ans
