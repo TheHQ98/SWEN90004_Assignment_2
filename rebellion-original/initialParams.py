@@ -3,8 +3,8 @@
 # @Date 22 April 2024
 
 # changeable params
-INITIAL_COP_DENSITY = float(0.04)
-INITIAL_AGENT_DENSITY = float(0.7)
+INITIAL_COP_DENSITY = 4
+INITIAL_AGENT_DENSITY = 70
 VISION_PATCHES = 7
 
 # fixed params

@@ -9,14 +9,7 @@ class Turtle:
         self.x = x
         self.y = y
 
-    def moveRandom(self, movement):
-        """
-        randomly pick an available move
-        :return:
-        """
-        if self.jailterm > 0 or (not movement and self.role==CIVI):
-            return
-
+    def move(self) -> None:
         pass
 
     def checkRevolt(self, neighbour_cop: int, neighbour_civi: int) -> None:
@@ -49,26 +42,32 @@ class Cop(Turtle):
 class Agent(Turtle):
     active: bool
 
-    def __init__(self, x, y):
+    def __init__(self, x, y, movement):
         super().__init__(x, y)
         self.jail_term = 0
         self.risk_aversion = random.random()
         self.perceived_hardship = random.random()
         self.active = False
+        self.movement = movement  # get movement bool from dynamicParams
+
+    def move(self) -> None:
+        if not self.movement:
+            return
 
     def run(self):
         self.move()
+        self.is_active()
 
     def decrease_jail_term(self):
         if self.jail_term > 0:
             self.jail_term -= 1
 
     def estimated_arrest_probability(self):
-        c = len(neighbour_cop) #TODO
-        a = 1 + len(neighbour_agent.active is true) #TODO
+        c = len(neighbour_cop)  #TODO
+        a = 1 + len(neighbour_agent.active is true)  #TODO
 
         return 1 - exp(-initialParams.K * floor(c / a + 1))
 
     def is_active(self):
         grievance = self.perceived_hardship * (1 - dynamicParams.GOVERNMENT_LEGITIMACY)
-        self.active = (grievance - self.risk_aversion * estimated_arrest_probability()) > initialParams.THRESHOLD
+        self.active = (grievance - self.risk_aversion * self.estimated_arrest_probability()) > initialParams.THRESHOLD
