@@ -1,4 +1,4 @@
-from .turtle import Turtle
+from .turtle import Cop, Agent, Turtle
 import random
 from .constant import *
 
@@ -47,10 +47,10 @@ class World:
         random.shuffle(loc_map)
         for i in range(cop_cnt):
             x, y = loc_map.pop()
-            self.patches[x][y].add_member(Turtle(x, y, role=COP))
+            self.patches[x][y].add_member(Cop(x,y))
         for i in range(civi_cnt):
             x, y = loc_map.pop()
-            self.patches[x][y].add_member(Turtle(x, y, role=CIVI))
+            self.patches[x][y].add_member(Agent(x, y))
 
     def update(self):
         # move all non-jailed turtles
