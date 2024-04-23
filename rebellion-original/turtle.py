@@ -9,33 +9,49 @@ class Turtle:
         self.x = x
         self.y = y
 
-    def move(self) -> None:
-        pass
+    def canMove(self) -> bool:
+        return True
 
-    def checkRevolt(self, neighbour_cop: int, neighbour_civi: int) -> None:
-        """
-        Pass in number of cops, number of civilian from the surrounding, then check if agent should
-        revolve the civilian
-        :param neibour_cop: number of cop in neighbourhood
-        :param neighbour_civi: number of active civilian from neighbourhood
-        :return:
-        """
-        if self.role == COP or self.jailterm > 0:
+    def move(self) -> None:
+        if not self.canMove():
             return
-        # TODO: global variables not linked(government_legitimacy, k, threshold)
-        grievance = self.percieved_hardship * (1 - government_legitimacy)
-        estimated_arrest_prob = 1 - exp(-k * floor(neighbour_cop / neighbour_civi + 1))
-        self.active = (grievance - self.risk_aversion * estimated_arrest_prob) > threshold
+
+    # def checkRevolt(self, neighbour_cop: int, neighbour_civi: int) -> None:
+    #     """
+    #     Pass in number of cops, number of civilian from the surrounding, then check if agent should
+    #     revolve the civilian
+    #     :param neibour_cop: number of cop in neighbourhood
+    #     :param neighbour_civi: number of active civilian from neighbourhood
+    #     :return:
+    #     """
+    #     if self.role == COP or self.jailterm > 0:
+    #         return
+    #     # TODO: global variables not linked(government_legitimacy, k, threshold)
+    #     grievance = self.percieved_hardship * (1 - government_legitimacy)
+    #     estimated_arrest_prob = 1 - exp(-k * floor(neighbour_cop / neighbour_civi + 1))
+    #     self.active = (grievance - self.risk_aversion * estimated_arrest_prob) > threshold
 
 
 class Cop(Turtle):
     def __init__(self, x, y):
         super().__init__(x, y)
+        self.movement = True # Cop movement always true
 
     def run(self):
         self.move()
+        self.enforce()
 
     def enforce(self):
+        agentActive = []
+        for i in neighbour:
+            if i.active:
+                agentActive.append(i)
+
+        tempAgent = random.choice(agentActive)
+        self.x = tempAgent.x
+        self.y = tempAgent.y
+        tempAgent.jail_term = dynamicParams.MAX_JAIL_TERM
+
         pass
 
 
@@ -50,13 +66,15 @@ class Agent(Turtle):
         self.active = False
         self.movement = movement  # get movement bool from dynamicParams
 
-    def move(self) -> None:
-        if not self.movement:
-            return
-
     def run(self):
         self.move()
         self.is_active()
+
+    def canMove(self) -> bool:
+        if self.movement and self.jail_term == 0:
+            return True
+        else:
+            return False
 
     def decrease_jail_term(self):
         if self.jail_term > 0:
