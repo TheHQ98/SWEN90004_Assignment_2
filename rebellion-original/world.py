@@ -1,40 +1,44 @@
-from .turtle import Cop, Agent, Turtle
+"""
+@author: Justin Zhang 1153289
+@Date: 24 April 2024
+"""
+# from turtle import Cop, Agent, Turtle
 import random
 from .dynamicParams import *
+from .initialParams import *
+from .turtle import Turtle, Cop, Agent
 
 
 class World:
-    def __init__(self, width, height, cop_density, agent_density, vision):
-        self.verify_parameters(width, height, cop_density, agent_density, vision)
-        self.width: int = width
-        self.height: int = height
+    def __init__(self, cop_density, agent_density, vision):
+        self.verify_parameters(cop_density, agent_density, vision)
+        self.width: int = TILE_WIDTH
+        self.height: int = TILE_HEIGHT
         self.patches: list[list[Patch]] = []
         self.cops: list[Cop] = []
         self.agents: list[Agent] = []
         self.tick: int = 0
         self.movement: bool = True
         self.vision = vision
-        self.initialize_patches(vision)
+        self.initialize_patches()
         self.initialise_turtles(cop_density, agent_density)
 
-    def verify_parameters(self, width, height, cop_density, agent_density, vision):
+    def verify_parameters(self, cop_density, agent_density, vision):
         """
         Verifies that the parameters are valid
         """
-        if width > MAX_WIDTH or height > MAX_HEIGHT or width <= 0 or height <= 0:
-            raise Exception("Invalid parameters: World dimension invalid")
         if cop_density + agent_density > 100:
             raise Exception("Invalid parameters: cop + agents exceeds capacity of world")
         if vision > MAX_VISION or vision < 0:
             raise Exception("Invalid parameters: Vision exceeds the world")
 
-    def initialize_patches(self, vision):
+    def initialize_patches(self):
         """
         create patch as container & store its neighbour reference, top left as (0, 0)
         """
-        for y in range(self.height):
+        for x in range(self.width):
             row = []
-            for x in range(self.width):
+            for y in range(self.height):
                 row.append(Patch(x, y))
             self.patches.append(row)
         for y in range(self.height):
@@ -51,18 +55,22 @@ class World:
         random.shuffle(loc_map)
         for i in range(cop_cnt):
             x, y = loc_map.pop()
-            self.patches[x][y].add_member(Cop(x, y))
+            cop = Cop(x, y)
+            self.patches[x][y].add_member(cop)
+            self.cops.append(cop)
         for i in range(agent_cnt):
             x, y = loc_map.pop()
-            self.patches[x][y].add_member(Agent(x, y, MOVEMENT))
+            agent = Agent(x, y, MOVEMENT)
+            self.patches[x][y].add_member(agent)
+            self.agents.append(agent)
 
     def update(self):
         # move all non-jailed turtles
-        for i in (random.shuffle(self.cops + self.agents)):
+        turt = self.cops + self.agents
+        for i in (random.sample(turt, len(turt))):
             self.patches[i.x][i.y].remove_member(i)
-            neighbours = self.patches[i.x][i.y].neighbourPatches
-            next_x, next_y = i.move(
-                neighbours)  # expects turtles to set its own coordinate within moveRandom
+            neighbours = self.patches[i.x][i.y].neighbour_patches
+            next_x, next_y = i.move(neighbours)
             self.patches[next_x][next_y].add_member(i)
 
         # check all agents to revolt, O(civ * n_size * avg_turtlePerPatch)
@@ -77,17 +85,37 @@ class World:
             agent.is_active(cop_cnt, active_cnt)
         # make cops hunt
         for cop in self.cops:
-            # neighbour_turtles = self.patches[cop.x][cop.y].get_neighbour_turtles()
+            neighbour_turtles = self.patches[cop.x][cop.y].get_neighbour_turtles()
             self.patches[cop.x][cop.y].remove_member(cop)
-            # next_x, next_y = cop.hunt(neighbour_turtles)
-            # self.patches[next_x][next_y].add_member(cop)
+            next_x, next_y = cop.enforce(neighbour_turtles)
+            self.patches[next_x][next_y].add_member(cop)
 
         # reduce all jail terms
         for c in self.agents:
-            if c.jail_term > 0:
-                c.jail_term -= 1
+            c.decrease_jail_term()
         # renew tick
         self.tick += 1
+
+        jail_cnt, active_cnt, quiet_cnt = self.get_stats()
+        return f"{self.tick},{quiet_cnt},{jail_cnt},{active_cnt}"
+
+    def get_stats(self):
+        jail_cnt, active_cnt, quiet_cnt = 0, 0, 0
+        for i in self.agents:
+            if i.jail_term > 0:
+                jail_cnt += 1
+            elif i.active:
+                active_cnt += 1
+            else:
+                quiet_cnt += 1
+        return jail_cnt, active_cnt, quiet_cnt
+
+    def print_patches(self):
+        for x in range(self.width):
+            for y in range(self.height):
+                print(f"({x:02},{y:02}) | {self.patches[x][y].get_string()}")
+        print(f"{self.tick}-----------------------------------------------")
+
 
 
 class Patch:
@@ -95,7 +123,7 @@ class Patch:
         self.x = x
         self.y = y
         self.members: list[Turtle] = []
-        self.neighbour_patches = []
+        self.neighbour_patches: list[Patch] = []
         # TODO: Optionally optimise by caching neighbour cop & agent/active count, updated on local change
 
     def add_member(self, agent: Turtle):
@@ -109,19 +137,17 @@ class Patch:
         return all the neighbour turtles
         """
         ans = []
-        for p in self.neighbourPatches:
+        for p in self.neighbour_patches:
             ans.extend(p.members)
         return ans
-
-    def is_free(self):
-        pass
 
     def get_neighbour_coords(self, r: int) -> list[(int, int)]:
         """
         Given vision range r, return all the coords that count as neighbour
         """
+        ans = []
         x_range, y_range = range(self.x - r, self.x + r), range(self.y - r, self.y + r)
-        ans = [(x, y) for y in y_range for x in x_range]
+        ans = [(x % TILE_WIDTH, y % TILE_HEIGHT) for y in y_range for x in x_range]
         # ans.remove((t.x, t.y)) # activate to remove self
         return ans
 
@@ -132,3 +158,16 @@ class Patch:
             if type(i) is Cop or (type(i) is Agent and i.jail_term == 0):
                 return False
         return True
+
+    def get_string(self):
+        s = ""
+        for i in self.members:
+            if type(i) is Cop:
+                s += "C"
+            elif i.jail_term > 0:
+                s += "J"
+            elif i.active:
+                s += "A"
+            else:
+                s += "Q"
+        return s

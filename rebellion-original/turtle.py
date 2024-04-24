@@ -1,8 +1,8 @@
 import random
-import dynamicParams, initialParams
 from math import exp, floor
-from .world import Patch
-from .constant import *
+from .dynamicParams import *
+from .initialParams import *
+# from .world import Patch
 
 
 class Turtle:
@@ -13,7 +13,7 @@ class Turtle:
     def canMove(self) -> bool:
         return True
 
-    def move(self, patches: list[Patch]) -> (int, int):
+    def move(self, patches) -> (int, int):
         if not self.canMove():
             return self.x, self.y
 
@@ -24,6 +24,7 @@ class Turtle:
 
         nextMove = random.choice(tempPatches)
 
+        self.x, self.y = nextMove.x, nextMove.y
         return nextMove.x, nextMove.y
 
     def get_active(self):
@@ -46,20 +47,20 @@ class Cop(Turtle):
             tempAgent = random.choice(agentActive)
             self.x = tempAgent.x
             self.y = tempAgent.y
-            tempAgent.jail_term = dynamicParams.MAX_JAIL_TERM
+            tempAgent.active = False
+            tempAgent.jail_term = random.randint(0, MAX_JAIL_TERM)
 
         return self.x, self.y
 
 
 class Agent(Turtle):
-    active: bool
 
     def __init__(self, x, y, movement):
         super().__init__(x, y)
         self.jail_term = 0
         self.risk_aversion = random.random()
         self.perceived_hardship = random.random()
-        self.active = False
+        self.active: bool = False
         self.movement = movement  # get movement bool from dynamicParams
 
     def canMove(self) -> bool:
@@ -72,16 +73,9 @@ class Agent(Turtle):
         if self.jail_term > 0:
             self.jail_term -= 1
 
-    # def estimated_arrest_probability(self, cop_cnt, active_cnt):
-    #     c = cop_cnt
-    #     a = 1 + active_cnt
-    #
-    #     return 1 - exp(-initialParams.K * floor(c / a))
-
     def get_active(self):
         return self.active
 
     def is_active(self, c, a):
-        grievance = self.perceived_hardship * (1 - dynamicParams.GOVERNMENT_LEGITIMACY)
-        self.active = \
-            (grievance - self.risk_aversion * 1 - exp(-initialParams.K * floor(c / a + 1))) > initialParams.THRESHOLD
+        grievance = self.perceived_hardship * (1 - GOVERNMENT_LEGITIMACY)
+        self.active = (grievance - self.risk_aversion * 1 - exp(-K * floor(c / (a + 1)))) > THRESHOLD
