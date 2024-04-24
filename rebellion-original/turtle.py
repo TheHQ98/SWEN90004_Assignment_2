@@ -4,6 +4,7 @@ from math import exp, floor
 from .world import Patch
 from .constant import *
 
+
 class Turtle:
     def __init__(self, x, y):
         self.x = x
@@ -12,33 +13,42 @@ class Turtle:
     def canMove(self) -> bool:
         return True
 
-    def move(self) -> None:
+    def move(self, patches: list[Patch]) -> (int, int):
         if not self.canMove():
-            return
+            return self.x, self.y
 
+        tempPatches = []
+        for patch in patches:
+            if patch.is_free():
+                tempPatches.append(patch)
+
+        nextMove = random.choice(tempPatches)
+
+        return nextMove.x, nextMove.y
+
+    def get_active(self):
+        pass
 
 
 class Cop(Turtle):
     def __init__(self, x, y):
         super().__init__(x, y)
-        self.movement = True # Cop movement always true
+        self.movement = True  # Cop movement always true
 
-    def run(self):
-        self.move()
-        self.enforce()
-
-    def enforce(self):
+    def enforce(self, turtle: list[Turtle]) -> (int, int):
         agentActive = []
-        for i in neighbour:
-            if i.active:
-                agentActive.append(i)
+        for i in turtle:
+            if type(i) is Agent:
+                if i.get_active():
+                    agentActive.append(i)
 
-        tempAgent = random.choice(agentActive)
-        self.x = tempAgent.x
-        self.y = tempAgent.y
-        tempAgent.jail_term = dynamicParams.MAX_JAIL_TERM
+        if agentActive:
+            tempAgent = random.choice(agentActive)
+            self.x = tempAgent.x
+            self.y = tempAgent.y
+            tempAgent.jail_term = dynamicParams.MAX_JAIL_TERM
 
-        pass
+        return self.x, self.y
 
 
 class Agent(Turtle):
@@ -52,10 +62,6 @@ class Agent(Turtle):
         self.active = False
         self.movement = movement  # get movement bool from dynamicParams
 
-    def run(self):
-        self.move()
-        self.is_active()
-
     def canMove(self) -> bool:
         if self.movement and self.jail_term == 0:
             return True
@@ -66,12 +72,16 @@ class Agent(Turtle):
         if self.jail_term > 0:
             self.jail_term -= 1
 
-    def estimated_arrest_probability(self, cop_cnt, active_cnt):
-        c = len(neighbour_cop)  #TODO
-        a = 1 + len(neighbour_agent.active is true)  #TODO
+    # def estimated_arrest_probability(self, cop_cnt, active_cnt):
+    #     c = cop_cnt
+    #     a = 1 + active_cnt
+    #
+    #     return 1 - exp(-initialParams.K * floor(c / a))
 
-        return 1 - exp(-initialParams.K * floor(c / a + 1))
+    def get_active(self):
+        return self.active
 
-    def is_active(self, cop_cnt, active_cnt):
+    def is_active(self, c, a):
         grievance = self.perceived_hardship * (1 - dynamicParams.GOVERNMENT_LEGITIMACY)
-        self.active = (grievance - self.risk_aversion * self.estimated_arrest_probability(cop_cnt, active_cnt)) > initialParams.THRESHOLD
+        self.active = \
+            (grievance - self.risk_aversion * 1 - exp(-initialParams.K * floor(c / a + 1))) > initialParams.THRESHOLD

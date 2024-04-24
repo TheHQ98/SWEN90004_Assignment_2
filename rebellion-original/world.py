@@ -1,6 +1,5 @@
 from .turtle import Cop, Agent, Turtle
 import random
-from .constant import *
 from .dynamicParams import *
 
 
@@ -113,6 +112,9 @@ class Patch:
         for p in self.neighbourPatches:
             ans.extend(p.members)
         return ans
+
+    def is_free(self):
+        pass
 
     def get_neighbour_coords(self, r: int) -> list[(int, int)]:
         """
