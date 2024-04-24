@@ -1,6 +1,7 @@
 from .turtle import Cop, Agent, Turtle
 import random
 from .constant import *
+from .dynamicParams import *
 
 
 class World:
@@ -37,7 +38,11 @@ class World:
             for x in range(self.width):
                 row.append(Patch(x, y))
             self.patches.append(row)
-        # TODO: initialize each patch with its neighbouring patch reference
+        for y in range(self.height):
+            for x in range(self.width):
+                neighbour_coord = self.patches[x][y].get_neighbour_coords(self.vision)
+                tmp_neighbours = [self.patches[a][b] for a, b in neighbour_coord]
+                self.patches[x][y].neighbour_patches = tmp_neighbours
 
     def initialise_turtles(self, cop_density, agent_density):
         patch_cnt = self.height * self.width
@@ -50,13 +55,15 @@ class World:
             self.patches[x][y].add_member(Cop(x, y))
         for i in range(agent_cnt):
             x, y = loc_map.pop()
-            self.patches[x][y].add_member(Agent(x, y))
+            self.patches[x][y].add_member(Agent(x, y, MOVEMENT))
 
     def update(self):
         # move all non-jailed turtles
         for i in (random.shuffle(self.cops + self.agents)):
             self.patches[i.x][i.y].remove_member(i)
-            next_x, next_y = i.moveRandom(self.movement) # expects turtles to set its own coordinate within moveRandom
+            neighbours = self.patches[i.x][i.y].neighbourPatches
+            next_x, next_y = i.move(
+                neighbours)  # expects turtles to set its own coordinate within moveRandom
             self.patches[next_x][next_y].add_member(i)
 
         # check all agents to revolt, O(civ * n_size * avg_turtlePerPatch)
@@ -68,14 +75,10 @@ class World:
                     cop_cnt += 1
                 elif i.active:
                     active_cnt += 1
-                # if i.role == COP:
-                #     cop_cnt += 1
-                # elif i.active:
-                #     active_cnt += 1
-            agent.checkRevolt(cop_cnt, active_cnt)
+            agent.is_active(cop_cnt, active_cnt)
         # make cops hunt
         for cop in self.cops:
-            # neighbour_turtles = self.patches[civ.x][civ.y].get_neighbour_turtles()
+            # neighbour_turtles = self.patches[cop.x][cop.y].get_neighbour_turtles()
             self.patches[cop.x][cop.y].remove_member(cop)
             # next_x, next_y = cop.hunt(neighbour_turtles)
             # self.patches[next_x][next_y].add_member(cop)
@@ -92,8 +95,8 @@ class Patch:
     def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.members = []
-        self.neighbourPatches = []
+        self.members: list[Turtle] = []
+        self.neighbour_patches = []
         # TODO: Optionally optimise by caching neighbour cop & agent/active count, updated on local change
 
     def add_member(self, agent: Turtle):
@@ -110,3 +113,20 @@ class Patch:
         for p in self.neighbourPatches:
             ans.extend(p.members)
         return ans
+
+    def get_neighbour_coords(self, r: int) -> list[(int, int)]:
+        """
+        Given vision range r, return all the coords that count as neighbour
+        """
+        x_range, y_range = range(self.x - r, self.x + r), range(self.y - r, self.y + r)
+        ans = [(x, y) for y in y_range for x in x_range]
+        # ans.remove((t.x, t.y)) # activate to remove self
+        return ans
+
+    def is_free(self) -> bool:
+        if not self.members:
+            return True
+        for i in self.members:
+            if type(i) is Cop or (type(i) is Agent and i.jail_term == 0):
+                return False
+        return True

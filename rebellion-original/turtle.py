@@ -1,8 +1,8 @@
 import random
 import dynamicParams, initialParams
 from math import exp, floor
+from .world import Patch
 from .constant import *
-
 
 class Turtle:
     def __init__(self, x, y):
@@ -16,20 +16,6 @@ class Turtle:
         if not self.canMove():
             return
 
-    # def checkRevolt(self, neighbour_cop: int, neighbour_civi: int) -> None:
-    #     """
-    #     Pass in number of cops, number of civilian from the surrounding, then check if agent should
-    #     revolve the civilian
-    #     :param neibour_cop: number of cop in neighbourhood
-    #     :param neighbour_civi: number of active civilian from neighbourhood
-    #     :return:
-    #     """
-    #     if self.role == COP or self.jailterm > 0:
-    #         return
-    #     # TODO: global variables not linked(government_legitimacy, k, threshold)
-    #     grievance = self.percieved_hardship * (1 - government_legitimacy)
-    #     estimated_arrest_prob = 1 - exp(-k * floor(neighbour_cop / neighbour_civi + 1))
-    #     self.active = (grievance - self.risk_aversion * estimated_arrest_prob) > threshold
 
 
 class Cop(Turtle):
@@ -80,12 +66,12 @@ class Agent(Turtle):
         if self.jail_term > 0:
             self.jail_term -= 1
 
-    def estimated_arrest_probability(self):
+    def estimated_arrest_probability(self, cop_cnt, active_cnt):
         c = len(neighbour_cop)  #TODO
         a = 1 + len(neighbour_agent.active is true)  #TODO
 
         return 1 - exp(-initialParams.K * floor(c / a + 1))
 
-    def is_active(self):
+    def is_active(self, cop_cnt, active_cnt):
         grievance = self.perceived_hardship * (1 - dynamicParams.GOVERNMENT_LEGITIMACY)
-        self.active = (grievance - self.risk_aversion * self.estimated_arrest_probability()) > initialParams.THRESHOLD
+        self.active = (grievance - self.risk_aversion * self.estimated_arrest_probability(cop_cnt, active_cnt)) > initialParams.THRESHOLD
