@@ -1,7 +1,7 @@
 import random
 from math import exp, floor
-from .dynamicParams import *
-from .initialParams import *
+from dynamicParams import *
+from initialParams import *
 # from .world import Patch
 
 

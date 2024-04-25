@@ -4,9 +4,9 @@
 """
 # from turtle import Cop, Agent, Turtle
 import random
-from .dynamicParams import *
-from .initialParams import *
-from .turtle import Turtle, Cop, Agent
+from dynamicParams import *
+from initialParams import *
+from turtle import Turtle, Cop, Agent
 
 
 class World:

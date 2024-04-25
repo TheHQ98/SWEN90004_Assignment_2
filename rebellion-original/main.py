@@ -1,5 +1,5 @@
-from .world import World
-from .initialParams import *
+from world import World
+from initialParams import *
 
 
 def main():
@@ -10,9 +10,12 @@ def main():
     with open('output.csv', 'w+') as fp:
         fp.write('tick,quiet,jailed,active\n')
         for i in range(1000):
+            print("Tick " + str(tick))
             s = world.update()
             fp.write(f"{s}\n")
             tick += 1
+
+    print("program Ended")
 
 
 if __name__ == '__main__':

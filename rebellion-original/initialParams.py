@@ -5,16 +5,12 @@
 # changeable params
 INITIAL_COP_DENSITY = 4
 INITIAL_AGENT_DENSITY = 70
-VISION_PATCHES = 3
+VISION_PATCHES = 7
 
-# fixed params
-TILE_HEIGHT = 10
-TILE_WIDTH = 10
-
+# fixed params (do not change)
+TILE_HEIGHT = 40
+TILE_WIDTH = 40
 K = 2.3
 THRESHOLD = 0.1
-
-def board():
-    return TILE_HEIGHT * TILE_WIDTH
 
 MAX_VISION = 10
