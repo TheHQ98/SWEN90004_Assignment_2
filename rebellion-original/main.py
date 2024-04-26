@@ -52,6 +52,7 @@ def main():
                 rect = pygame.Rect(x, y, GRID_SIZE, GRID_SIZE)
                 pygame.draw.rect(screen, WHITE, rect, 1)
 
+        tempCop = 0
         # 绘制代理和警察
         for i in s:
             if isinstance(i, Agent):
@@ -66,15 +67,19 @@ def main():
                 else:
                     pygame.draw.circle(screen, GREEN, (i.x * GRID_SIZE + GRID_SIZE // 2, i.y * GRID_SIZE + GRID_SIZE // 2),
                                     GRID_SIZE // 2 - 5)
-            elif isinstance(i, Cop):
+
+        for i in s:
+            if isinstance(i, Cop):
                 pygame.draw.circle(screen, BLUE, (i.x * GRID_SIZE + GRID_SIZE // 2, i.y * GRID_SIZE + GRID_SIZE // 2),
                                    GRID_SIZE // 2 - 5)
+                tempCop += 1
 
         # 更新屏幕
         pygame.display.flip()
 
         # 控制游戏更新速度
         pygame.time.Clock().tick(5)
+        #print("Cop: " + str(tempCop))
         tick += 1
     # 退出 Pygame
     pygame.quit()
