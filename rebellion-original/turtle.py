@@ -50,7 +50,7 @@ class Cop(Turtle):
             self.x = tempAgent.x
             self.y = tempAgent.y
             tempAgent.active = False
-            tempAgent.jail_term = random.randint(0, MAX_JAIL_TERM)
+            tempAgent.jail_term = random.randint(1, MAX_JAIL_TERM)
             # tempAgent.jail_term = MAX_JAIL_TERM
 
         return self.x, self.y

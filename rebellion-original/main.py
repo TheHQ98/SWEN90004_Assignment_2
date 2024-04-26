@@ -9,7 +9,7 @@ def main():
 
     with open('../VisualGraph/output.csv', 'w+') as fp:
         fp.write('tick,quiet,jailed,active\n')
-        for i in range(200):
+        for i in range(MAX_TICK):
             print("Tick " + str(tick))
             s = world.update()
             fp.write(f"{s}\n")
