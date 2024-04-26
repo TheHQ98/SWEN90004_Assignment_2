@@ -9,7 +9,7 @@ def main():
     pygame.init()
 
     # 网格设置
-    GRID_SIZE = 40
+    GRID_SIZE = 30
     NUM_GRIDS = 40
     SCREEN_WIDTH = GRID_SIZE * NUM_GRIDS
     SCREEN_HEIGHT = GRID_SIZE * NUM_GRIDS
@@ -30,9 +30,10 @@ def main():
     print("program Started")
     world = World(agent_density=INITIAL_AGENT_DENSITY, cop_density=INITIAL_COP_DENSITY, vision=VISION_PATCHES)
     tick = 0
-
+    world.plot_stats()
     # 游戏循环
     while running:
+
         print("Tick " + str(tick))
         s = world.update()
 

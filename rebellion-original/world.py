@@ -7,7 +7,8 @@ import random
 from dynamicParams import *
 from initialParams import *
 from turtle import Turtle, Cop, Agent
-
+import matplotlib.pyplot as plt
+import pandas as pd
 
 class World:
     def __init__(self, cop_density, agent_density, vision):
@@ -20,6 +21,7 @@ class World:
         self.tick: int = 0
         self.movement: bool = True
         self.vision = vision
+        self.df = pd.DataFrame()
         self.initialize_patches()
         self.initialise_turtles(cop_density, agent_density)
 
@@ -43,7 +45,7 @@ class World:
             self.patches.append(row)
         for y in range(self.height):
             for x in range(self.width):
-                neighbour_coord = self.patches[x][y].get_neighbour_coords(self.vision, mode="rect")
+                neighbour_coord = self.patches[x][y].get_neighbour_coords(self.vision)
                 tmp_neighbours = [self.patches[a][b] for a, b in neighbour_coord]
                 self.patches[x][y].neighbour_patches = tmp_neighbours
 
@@ -70,9 +72,12 @@ class World:
         turt = self.cops + self.agents
 
         self.rule_M(turt)
-        self.rule_A()
+        ind = self.rule_A()
         self.rule_C()
 
+        self.df = self.df._append([ind], ignore_index=True)
+        if self.tick % 50 == 49:
+            self.df.to_csv('../VisualGraph/ind_record.csv')
         # reduce all jail terms
         for c in self.agents:
             c.decrease_jail_term()
@@ -92,6 +97,7 @@ class World:
             self.patches[next_x][next_y].add_member(i)
 
     def rule_A(self):
+        indicator = []
         for agent in self.agents:
             neighbour_turtles = self.patches[agent.x][agent.y].get_neighbour_turtles()
             cop_cnt, active_cnt = 0, 0
@@ -100,7 +106,8 @@ class World:
                     cop_cnt += 1
                 elif i.active:
                     active_cnt += 1
-            agent.is_active(cop_cnt, active_cnt)
+            indicator.append(agent.is_active(cop_cnt, active_cnt))
+        return indicator
 
     def rule_C(self):
         for cop in self.cops:
@@ -126,6 +133,33 @@ class World:
                 print(f"({x:02},{y:02}) | {self.patches[x][y].get_string()}")
         print(f"{self.tick}-----------------------------------------------")
 
+    def plot_stats(self):
+        RA, PH = [], []
+        for agent in self.agents:
+            RA.append(agent.risk_aversion)
+            PH.append(agent.perceived_hardship)
+        # Create histogram
+        fig, axs = plt.subplots(1, 2, figsize=(10, 4))  # 1 row, 2 columns
+
+        # Histogram for data1
+        axs[0].hist(RA, bins=20, color='blue', alpha=0.75)
+        axs[0].set_title('Risk Aversion')
+        axs[0].set_xlabel('Risk Aversion')
+        axs[0].set_ylabel('Frequency')
+
+        # Histogram for data2
+        axs[1].hist(PH, bins=20, color='red', alpha=0.75)
+        axs[1].set_title('Perceived Hardship')
+        axs[1].set_xlabel('Perceived Hardship')
+        axs[1].set_ylabel('Frequency')
+
+        # Adjust layout to prevent overlap
+        plt.tight_layout()
+
+        # Save the figure
+        plt.savefig('../VisualGraph/agent_stats.png')
+
+        # plt.show()
 
 
 class Patch:

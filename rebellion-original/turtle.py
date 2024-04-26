@@ -81,4 +81,8 @@ class Agent(Turtle):
 
     def is_active(self, c, a):
         grievance = self.perceived_hardship * (1 - GOVERNMENT_LEGITIMACY)
-        self.active = (grievance - self.risk_aversion * (1 - exp(-K * floor(c / (a + 1))))) > THRESHOLD
+        arrest_prob = (1 - exp(- (K * floor(c / (a + 1)))))
+        # arrest_prob = 0.0007 if a > c else 0.99
+        indicator = grievance - (self.risk_aversion * arrest_prob)
+        self.active = indicator > THRESHOLD
+        return indicator
