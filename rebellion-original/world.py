@@ -43,7 +43,7 @@ class World:
             self.patches.append(row)
         for y in range(self.height):
             for x in range(self.width):
-                neighbour_coord = self.patches[x][y].get_neighbour_coords(self.vision)
+                neighbour_coord = self.patches[x][y].get_neighbour_coords(self.vision, mode="rect")
                 tmp_neighbours = [self.patches[a][b] for a, b in neighbour_coord]
                 self.patches[x][y].neighbour_patches = tmp_neighbours
 
@@ -65,30 +65,13 @@ class World:
             self.agents.append(agent)
 
     def update(self):
+
         # move all non-jailed turtles
         turt = self.cops + self.agents
-        for i in (random.sample(turt, len(turt))):
-            self.patches[i.x][i.y].remove_member(i)
-            neighbours = self.patches[i.x][i.y].neighbour_patches
-            next_x, next_y = i.move(neighbours)
-            self.patches[next_x][next_y].add_member(i)
 
-        # check all agents to revolt, O(civ * n_size * avg_turtlePerPatch)
-        for agent in self.agents:
-            neighbour_turtles = self.patches[agent.x][agent.y].get_neighbour_turtles()
-            cop_cnt, active_cnt = 0, 0
-            for i in neighbour_turtles:
-                if type(i) is Cop:
-                    cop_cnt += 1
-                elif i.active:
-                    active_cnt += 1
-            agent.is_active(cop_cnt, active_cnt)
-        # make cops hunt
-        for cop in self.cops:
-            neighbour_turtles = self.patches[cop.x][cop.y].get_neighbour_turtles()
-            self.patches[cop.x][cop.y].remove_member(cop)
-            next_x, next_y = cop.enforce(neighbour_turtles)
-            self.patches[next_x][next_y].add_member(cop)
+        self.rule_M(turt)
+        self.rule_A()
+        self.rule_C()
 
         # reduce all jail terms
         for c in self.agents:
@@ -98,6 +81,31 @@ class World:
 
         jail_cnt, active_cnt, quiet_cnt = self.get_stats()
         return f"{self.tick},{quiet_cnt},{jail_cnt},{active_cnt}"
+
+    def rule_M(self, turt):
+        for i in (random.sample(turt, len(turt))):
+            self.patches[i.x][i.y].remove_member(i)
+            neighbours = self.patches[i.x][i.y].neighbour_patches
+            next_x, next_y = i.move(neighbours)
+            self.patches[next_x][next_y].add_member(i)
+
+    def rule_A(self):
+        for agent in self.agents:
+            neighbour_turtles = self.patches[agent.x][agent.y].get_neighbour_turtles()
+            cop_cnt, active_cnt = 0, 0
+            for i in neighbour_turtles:
+                if type(i) is Cop:
+                    cop_cnt += 1
+                elif i.active:
+                    active_cnt += 1
+            agent.is_active(cop_cnt, active_cnt)
+
+    def rule_C(self):
+        for cop in self.cops:
+            neighbour_turtles = self.patches[cop.x][cop.y].get_neighbour_turtles()
+            self.patches[cop.x][cop.y].remove_member(cop)
+            next_x, next_y = cop.enforce(neighbour_turtles)
+            self.patches[next_x][next_y].add_member(cop)
 
     def get_stats(self):
         jail_cnt, active_cnt, quiet_cnt = 0, 0, 0
@@ -141,13 +149,22 @@ class Patch:
             ans.extend(p.members)
         return ans
 
-    def get_neighbour_coords(self, r: int) -> list[(int, int)]:
+    def get_neighbour_coords(self, r: int, mode="Manhattan") -> list[(int, int)]:
         """
         Given vision range r, return all the coords that count as neighbour
         """
         ans = []
-        x_range, y_range = range(self.x - r, self.x + r), range(self.y - r, self.y + r)
-        ans = [(x % TILE_WIDTH, y % TILE_HEIGHT) for y in y_range for x in x_range]
+        if mode == "Manhattan":
+            for dx in range(-r, r + 1):  # Range from -r to r
+                for dy in range(-r, r + 1):  # Range from -r to r
+                    if abs(dx) + abs(dy) <= r:  # Manhattan distance check
+                        x = (self.x + dx) % TILE_WIDTH
+                        y = (self.y + dy) % TILE_HEIGHT
+                        if (x, y) != (self.x, self.y):  # Optionally exclude the center point
+                            ans.append((x, y))
+        else:
+            x_range, y_range = range(self.x - r, self.x + r), range(self.y - r, self.y + r)
+            ans = [(x % TILE_WIDTH, y % TILE_HEIGHT) for y in y_range for x in x_range]
         # ans.remove((t.x, t.y)) # activate to remove self
         return ans
 

@@ -21,8 +21,10 @@ class Turtle:
         for patch in patches:
             if patch.is_free():
                 tempPatches.append(patch)
-
-        nextMove = random.choice(tempPatches)
+        if tempPatches:
+            nextMove = random.choice(tempPatches)
+        else:
+            return self.x, self.y
 
         self.x, self.y = nextMove.x, nextMove.y
         return nextMove.x, nextMove.y
@@ -49,6 +51,7 @@ class Cop(Turtle):
             self.y = tempAgent.y
             tempAgent.active = False
             tempAgent.jail_term = random.randint(0, MAX_JAIL_TERM)
+            # tempAgent.jail_term = MAX_JAIL_TERM
 
         return self.x, self.y
 
@@ -78,4 +81,4 @@ class Agent(Turtle):
 
     def is_active(self, c, a):
         grievance = self.perceived_hardship * (1 - GOVERNMENT_LEGITIMACY)
-        self.active = (grievance - self.risk_aversion * 1 - exp(-K * floor(c / (a + 1)))) > THRESHOLD
+        self.active = (grievance - self.risk_aversion * (1 - exp(-K * floor(c / (a + 1))))) > THRESHOLD
