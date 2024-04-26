@@ -80,7 +80,9 @@ class World:
         self.tick += 1
 
         jail_cnt, active_cnt, quiet_cnt = self.get_stats()
-        return f"{self.tick},{quiet_cnt},{jail_cnt},{active_cnt}"
+        #return f"{self.tick},{quiet_cnt},{jail_cnt},{active_cnt}"
+        print(f"{self.tick},{quiet_cnt},{jail_cnt},{active_cnt}")
+        return turt
 
     def rule_M(self, turt):
         for i in (random.sample(turt, len(turt))):
