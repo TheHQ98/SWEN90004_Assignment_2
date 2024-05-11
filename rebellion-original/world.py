@@ -17,7 +17,7 @@ class World:
         self.patches: list[list[Patch]] = []
         self.cops: list[Cop] = []
         self.agents: list[Agent] = []
-        self.tick: int = 0
+        self.tick: int = -1
         self.movement: bool = True
         self.vision = vision
         self.initialize_patches()
@@ -83,7 +83,7 @@ class World:
         return f"{self.tick},{quiet_cnt},{jail_cnt},{active_cnt}"
 
     def rule_M(self, turt):
-        for i in (random.sample(turt, len(turt))):
+        for i in turt:
             self.patches[i.x][i.y].remove_member(i)
             neighbours = self.patches[i.x][i.y].neighbour_patches
             next_x, next_y = i.move(neighbours)
@@ -94,11 +94,13 @@ class World:
             neighbour_turtles = self.patches[agent.x][agent.y].get_neighbour_turtles()
             cop_cnt, active_cnt = 0, 0
             for i in neighbour_turtles:
-                if type(i) is Cop:
+                if isinstance(i, Cop):
                     cop_cnt += 1
-                elif i.active:
-                    active_cnt += 1
-            agent.is_active(cop_cnt, active_cnt)
+                if isinstance(i, Agent):
+                    if i.active:
+                        active_cnt += 1
+
+            agent.is_active(cop_cnt, active_cnt+1)
 
     def rule_C(self):
         for cop in self.cops:

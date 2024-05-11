@@ -41,17 +41,18 @@ class Cop(Turtle):
     def enforce(self, turtle: list[Turtle]) -> (int, int):
         agentActive = []
         for i in turtle:
-            if type(i) is Agent:
+            if isinstance(i, Agent):
                 if i.get_active():
                     agentActive.append(i)
 
-        if agentActive:
-            tempAgent = random.choice(agentActive)
-            self.x = tempAgent.x
-            self.y = tempAgent.y
-            tempAgent.active = False
-            tempAgent.jail_term = random.randint(1, MAX_JAIL_TERM)
-            # tempAgent.jail_term = MAX_JAIL_TERM
+        if len(agentActive) == 0:
+            return self.x, self.y
+
+        tempAgent = random.choice(agentActive)
+        self.x = tempAgent.x
+        self.y = tempAgent.y
+        tempAgent.active = False
+        tempAgent.jail_term = random.randint(0, MAX_JAIL_TERM)
 
         return self.x, self.y
 
@@ -61,8 +62,8 @@ class Agent(Turtle):
     def __init__(self, x, y, movement):
         super().__init__(x, y)
         self.jail_term = 0
-        self.risk_aversion = random.random()
-        self.perceived_hardship = random.random()
+        self.risk_aversion = random.uniform(0, 1)
+        self.perceived_hardship = random.uniform(0, 1)
         self.active: bool = False
         self.movement = movement  # get movement bool from dynamicParams
 
@@ -80,5 +81,8 @@ class Agent(Turtle):
         return self.active
 
     def is_active(self, c, a):
+        if self.jail_term > 0:
+            return False
         grievance = self.perceived_hardship * (1 - GOVERNMENT_LEGITIMACY)
-        self.active = (grievance - self.risk_aversion * (1 - exp(-K * floor(c / (a + 1))))) > THRESHOLD
+        estimatedArrestProbability = 1 - exp(-K * floor(c/a))
+        self.active = (grievance - self.risk_aversion * estimatedArrestProbability) > THRESHOLD
