@@ -52,6 +52,7 @@ class World:
         patch_cnt = self.height * self.width
         cop_cnt = round(cop_density * 0.01 * patch_cnt)
         agent_cnt = round(agent_density * 0.01 * patch_cnt)
+        left_cnt = agent_cnt * LEFT_RIGHT_RATIO
         loc_map = [(x, y) for x in range(self.width) for y in range(self.height)]
         random.shuffle(loc_map)
         for i in range(cop_cnt):
@@ -61,9 +62,16 @@ class World:
             self.cops.append(cop)
         for i in range(agent_cnt):
             x, y = loc_map.pop()
-            agent = Agent(x, y, MOVEMENT)
-            self.patches[x][y].add_member(agent)
-            self.agents.append(agent)
+            if (i < left_cnt):
+                agent = Agent(x, y, MOVEMENT, LEFT)
+                self.patches[x][y].add_member(agent)
+                self.agents.append(agent)
+            else:
+                agent = Agent(x, y, MOVEMENT, RIGHT)
+                self.patches[x][y].add_member(agent)
+                self.agents.append(agent)
+            # agent = Agent(x, y, MOVEMENT, )
+
 
     def update(self):
 
