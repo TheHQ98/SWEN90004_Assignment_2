@@ -64,19 +64,11 @@ class Cop(Turtle):
 
 class Agent(Turtle):
 
-    def __init__(self, x, y, movement, leftOrRight):
+    def __init__(self, x, y, movement):
         super().__init__(x, y)
-        self.leftOrRight = leftOrRight
         self.jail_term = 0
-        if leftOrRight == 0:
-            self.risk_aversion = random.uniform(0.0, 0.3)
-            self.perceived_hardship = random.uniform(0.7, 1.0)
-        elif leftOrRight == 1:
-            self.risk_aversion = random.uniform(0.7, 1.0)
-            self.perceived_hardship = random.uniform(0.0, 0.3)
-        else:
-            self.risk_aversion = random.uniform(0, 1)
-            self.perceived_hardship = random.uniform(0, 1)
+        self.risk_aversion = random.uniform(0, 1)
+        self.perceived_hardship = random.uniform(0, 1)
         self.active: bool = False
         self.movement = movement  # get movement bool from dynamicParams
 
