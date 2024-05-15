@@ -1,3 +1,9 @@
+"""
+main class
+
+@author: Justin Zhang 1153289
+@Date: 24 April 2024
+"""
 from world import World
 from initialParams import *
 

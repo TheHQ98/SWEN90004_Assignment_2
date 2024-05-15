@@ -1,8 +1,13 @@
+"""
+turtle class
+
+@author: Josh Feng 1266669
+@Date: 24 April 2024
+"""
 import random
 from math import exp, floor
 from dynamicParams import *
 from initialParams import *
-# from .world import Patch
 
 
 class Turtle:
