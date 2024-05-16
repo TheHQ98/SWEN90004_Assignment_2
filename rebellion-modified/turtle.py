@@ -100,10 +100,10 @@ class Agent(Turtle):
         super().__init__(x, y)
         self.leftOrRight = leftOrRight
         self.jail_term = 0
-        if leftOrRight == 0:
+        if leftOrRight == LEFT:
             self.risk_aversion = random.uniform(0.0, 0.3)
             self.perceived_hardship = random.uniform(0.7, 1.0)
-        elif leftOrRight == 1:
+        elif leftOrRight == RIGHT:
             self.risk_aversion = random.uniform(0.7, 1.0)
             self.perceived_hardship = random.uniform(0.0, 0.3)
         else:
