@@ -1,5 +1,7 @@
 """
-@author: Justin Zhang 1153289
+world-class
+
+@author: Justin Zhang - 1153289
 @Date: 24 April 2024
 """
 
@@ -188,14 +190,14 @@ class Patch:
         return True
 
     def get_string(self):
-        s = ""
+        output = ""
         for i in self.members:
             if type(i) is Cop:
-                s += "C"
+                output += NUM_COP
             elif i.jail_term > 0:
-                s += "J"
+                output += NUM_JAILED
             elif i.active:
-                s += "A"
+                output += NUM_ACTIVE
             else:
-                s += "Q"
-        return s
+                output += NUM_QUIET
+        return output
