@@ -1,5 +1,6 @@
 """
 world-class
+Contains the World class for controlling simulation flow & Patches as grid representations
 
 @author: Justin Zhang - 1153289
 @Date: 24 April 2024
@@ -50,6 +51,9 @@ class World:
                 self.patches[x][y].neighbour_patches = tmp_neighbours
 
     def initialise_turtles(self, cop_density, agent_density):
+        """
+        instantiate turtle objects
+        """
         patch_cnt = self.height * self.width
         cop_cnt = round(cop_density * 0.01 * patch_cnt)
         agent_cnt = round(agent_density * 0.01 * patch_cnt)
@@ -67,7 +71,9 @@ class World:
             self.agents.append(agent)
 
     def update(self):
-
+        """
+        run update cycle of a tick
+        """
         # move all non-jailed turtles
         turt = self.cops + self.agents
 
@@ -85,6 +91,9 @@ class World:
         return f"{self.tick},{quiet_cnt},{jail_cnt},{active_cnt}"
 
     def rule_M(self, turt):
+        """
+        rule M(ove), move each turtle randomly
+        """
         for i in turt:
             self.patches[i.x][i.y].remove_member(i)
             neighbours = self.patches[i.x][i.y].neighbour_patches
@@ -92,6 +101,9 @@ class World:
             self.patches[next_x][next_y].add_member(i)
 
     def rule_A(self):
+        """
+        rule A(gent), determine if agent should be active or not
+        """
         for agent in self.agents:
             neighbour_turtles = self.patches[agent.x][agent.y].get_neighbour_turtles()
             cop_cnt, active_cnt = 0, 0
@@ -105,6 +117,9 @@ class World:
             agent.is_active(cop_cnt, active_cnt + 1)
 
     def rule_C(self):
+        """
+        role C(op), cops out arresting people
+        """
         for cop in self.cops:
             neighbour_turtles = self.patches[cop.x][cop.y].get_neighbour_turtles()
             self.patches[cop.x][cop.y].remove_member(cop)
@@ -112,6 +127,9 @@ class World:
             self.patches[next_x][next_y].add_member(cop)
 
     def get_stats(self):
+        """
+        extract stats from patches: Jail, Active, Quiet
+        """
         jail_cnt, active_cnt, quiet_cnt = 0, 0, 0
         for i in self.agents:
             if i.jail_term > 0:
@@ -123,6 +141,9 @@ class World:
         return jail_cnt, active_cnt, quiet_cnt
 
     def print_patches(self):
+        """
+        Debug method for printing patches
+        """
         for x in range(self.width):
             for y in range(self.height):
                 print(f"({x:02},{y:02}) | {self.patches[x][y].get_string()}")
@@ -135,12 +156,17 @@ class Patch:
         self.y = y
         self.members: list[Turtle] = []
         self.neighbour_patches: list[Patch] = []
-        # TODO: Optionally optimise by caching neighbour cop & agent/active count, updated on local change
 
     def add_member(self, agent: Turtle):
+        """
+        adds a new turtle to this patch
+        """
         self.members.append(agent)
 
     def remove_member(self, agent: Turtle):
+        """
+        removes a turtle from this patch
+        """
         self.members.remove(agent)
 
     def get_neighbour_turtles(self):
@@ -152,26 +178,30 @@ class Patch:
             ans.extend(p.members)
         return ans
 
-    def get_neighbour_coords(self, r: int, mode="Manhattan") -> list[(int, int)]:
+    def get_neighbour_coords(self, r: float, mode="Manhattan") -> list[(int, int)]:
         """
         Given vision range r, return all the coords that count as neighbour
         """
+        radius = round(r)
         ans = []
         if mode == "Manhattan":
-            for dx in range(-r, r + 1):  # Range from -r to r
-                for dy in range(-r, r + 1):  # Range from -r to r
-                    if abs(dx) + abs(dy) <= r:  # Manhattan distance check
+            for dx in range(-radius, radius + 1):  # Range from -r to r
+                for dy in range(-radius, radius + 1):  # Range from -r to r
+                    if abs(dx) + abs(dy) <= radius:  # Manhattan distance check
                         x = (self.x + dx) % TILE_WIDTH
                         y = (self.y + dy) % TILE_HEIGHT
                         if (x, y) != (self.x, self.y):  # Optionally exclude the center point
                             ans.append((x, y))
         else:
-            x_range, y_range = range(self.x - r, self.x + r), range(self.y - r, self.y + r)
+            x_range, y_range = range(self.x - radius, self.x + radius), range(self.y - radius, self.y + radius)
             ans = [(x % TILE_WIDTH, y % TILE_HEIGHT) for y in y_range for x in x_range]
         # ans.remove((t.x, t.y)) # activate to remove self
         return ans
 
     def is_free(self) -> bool:
+        """
+        return true if no agent on current tile, v.v.
+        """
         if not self.members:
             return True
         for i in self.members:
@@ -180,6 +210,9 @@ class Patch:
         return True
 
     def get_string(self):
+        """
+        return string representation of patch
+        """
         output = ""
         for i in self.members:
             if type(i) is Cop:
