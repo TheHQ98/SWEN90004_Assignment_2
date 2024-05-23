@@ -1,5 +1,20 @@
 """
-main class
+the original rebellion model, replication the behavior of Netlogo Rebellion Model
+
+simplify run the program by using main class
+the program will run for 200 ticks, and will produce an output csv file in the same directory
+csv file values contains:
+    tick, quiet, jailed, active
+
+Changeable parameters are in initialParams.py and dynamicParams.y
+initialParams.py is for static parameters include:
+    INITIAL_COP_DENSITY
+    INITIAL_AGENT_DENSITY
+    VISION_PATCHES
+dynamicParams.py is for dynamic parameters include:
+    GOVERNMENT_LEGITIMACY
+    MAX_JAIL_TERM
+    MOVEMENT
 
 @author: Josh Feng   - 1266669
         Justin Zhang - 1153289
