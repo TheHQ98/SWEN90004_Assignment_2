@@ -10,7 +10,7 @@ initial params
 INITIAL_COP_DENSITY = 4  # percentage
 INITIAL_AGENT_DENSITY = 70  # percentage
 VISION_PATCHES = 7.0
-LEFT_RIGHT_RATIO = 0.2
+LEFT_RIGHT_RATIO = 0.5
 
 # fixed params (do not change)
 TILE_HEIGHT = 40

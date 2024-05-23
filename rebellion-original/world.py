@@ -9,7 +9,7 @@ Contains the World class for controlling simulation flow & Patches as grid repre
 import random
 from dynamicParams import *
 from initialParams import *
-from turtle import Turtle, Cop, Agent
+from turtles import Turtle, Cop, Agent
 
 
 class World:

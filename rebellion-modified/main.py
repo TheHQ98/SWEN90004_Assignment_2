@@ -21,6 +21,7 @@ dynamicParams.py is for dynamic parameters include:
 
 @author: Josh Feng   - 1266669
         Justin Zhang - 1153289
+        Yixing Bai - 1506220
 @Date: 24 April 2024
 """
 

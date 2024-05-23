@@ -17,6 +17,7 @@ class Turtle:
     """
     simulates a turtle object, which the behaviours are shared by both cop and turtle.
     """
+
     def __init__(self, x, y):
         """initial location"""
         self.x = x
@@ -26,7 +27,7 @@ class Turtle:
         """return move value"""
         return True
 
-    def move(self, patches) -> (int, int):
+    def move(self, patches) -> (int, int):  # type: ignore
         """
         move logic
         1. if not allowed move then return self locations
@@ -60,12 +61,13 @@ class Cop(Turtle):
     cop class which contain Turtle surer class
     simulates cop behaviour
     """
+
     def __init__(self, x, y):
         """initial the cop"""
         super().__init__(x, y)
         self.movement = True  # Cop movement always true
 
-    def enforce(self, turtle: list[Turtle]) -> (int, int):
+    def enforce(self, turtle: list[Turtle]) -> (int, int):  # type: ignore
         """
         find and arrest the agent that is active in the neighbours
         """
@@ -95,20 +97,13 @@ class Agent(Turtle):
     """
     simulate agent behaviour
     """
-    def __init__(self, x, y, movement, leftOrRight):
+
+    def __init__(self, x, y, movement):
         """initial the agent"""
         super().__init__(x, y)
-        self.leftOrRight = leftOrRight
         self.jail_term = 0
-        if leftOrRight == LEFT:
-            self.risk_aversion = random.uniform(0.0, 0.3)
-            self.perceived_hardship = random.uniform(0.7, 1.0)
-        elif leftOrRight == RIGHT:
-            self.risk_aversion = random.uniform(0.7, 1.0)
-            self.perceived_hardship = random.uniform(0.0, 0.3)
-        else:
-            self.risk_aversion = random.uniform(0, 1)
-            self.perceived_hardship = random.uniform(0, 1)
+        self.risk_aversion = random.uniform(0, 1)
+        self.perceived_hardship = random.uniform(0, 1)
         self.active: bool = False
         self.movement = movement  # get movement bool from dynamicParams
 
